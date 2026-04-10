@@ -8,7 +8,7 @@ variable "vm_memory" {
 
 variable "vm_disk" {
   type = string
-  default = "40G"
+  default = "20G"
 }
 
 variable "vm_count" {
