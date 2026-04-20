@@ -9,7 +9,7 @@ ansible-gitlab/
 ├── ansible.cfg
 ├── site.yml                          # Основной playbook
 ├── inventory/
-│   └── hosts.ini                     # Инвентарь (192.168.1.31)             
+│   └── hosts.ini                     # Инвентарь             
 └── roles/gitlab/
     ├── defaults/main.yml             # Переменные по умолчанию
     ├── tasks/
