@@ -1,0 +1,11 @@
+---
+- name: Рестарт GitLab
+  ansible.builtin.command:
+    cmd: docker compose restart
+    chdir: "{{ gitlab_compose_dir }}"
+  listen: "restart gitlab"
+
+- name: Перезагрузка конфигов GitLab 
+  ansible.builtin.command:
+    cmd: docker exec {{ gitlab_container_name }} gitlab-ctl reconfigure
+  listen: "reconfigure gitlab"

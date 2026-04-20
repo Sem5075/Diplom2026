@@ -1,0 +1,38 @@
+---
+# === Основные настройки GitLab ===
+gitlab_version: "latest"
+gitlab_domain: "{{ ansible_host }}"
+gitlab_external_url: "http://{{ ansible_host }}"
+
+# === Порты ===
+gitlab_http_port: 5080
+gitlab_https_port: 5443
+gitlab_ssh_port: 2222
+
+# === Пути на хосте для volumes ===
+gitlab_base_dir: "/opt/gitlab"
+gitlab_config_dir: "{{ gitlab_base_dir }}/config"
+gitlab_logs_dir: "{{ gitlab_base_dir }}/logs"
+gitlab_data_dir: "{{ gitlab_base_dir }}/data"
+gitlab_compose_dir: "{{ gitlab_base_dir }}"
+
+# === Docker ===
+docker_compose_version: "2"
+gitlab_container_name: "gitlab"
+gitlab_network_name: "gitlab_network"
+
+# === Ресурсы контейнера ===
+gitlab_shm_size: "256m"
+gitlab_restart_policy: "unless-stopped"
+
+
+# === Настройки backup ===
+gitlab_backup_enabled: true
+gitlab_backup_keep_time: 604800  # 7 дней в секундах
+gitlab_backup_cron_hour: "2"
+gitlab_backup_cron_minute: "0"
+
+# === Таймауты ===
+gitlab_startup_timeout: 300
+gitlab_healthcheck_retries: 60
+gitlab_healthcheck_delay: 5

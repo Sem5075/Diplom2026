@@ -1,0 +1,47 @@
+---
+- name: Деплой GitLab
+  hosts: gitlab_servers
+  become: true
+  gather_facts: true
+
+  pre_tasks:
+    - name: Проверка целевого хоста
+      ansible.builtin.debug:
+        msg: "Развёртывание GitLab на {{ inventory_hostname }} ({{ ansible_host }})"
+
+    - name: Проверка минимальной RAM (рекомендуется 4GB+)
+      ansible.builtin.assert:
+        that: ansible_memtotal_mb >= 3800
+        msg: "ВНИМАНИЕ: Доступно только {{ ansible_memtotal_mb }}MB RAM. GitLab рекомендует минимум 4GB."
+        quiet: false
+      ignore_errors: true
+
+    - name: Проверка свободного пространства в корне (рекомендуется 20GB+)
+      ansible.builtin.shell: |
+        df -BG /opt | awk 'NR==2 {print $4}' | tr -d 'G'
+      register: free_space
+      changed_when: false
+
+    - name: Уведомлении о свободном пространстве 
+      ansible.builtin.debug:
+        msg: "Свободного места: {{ free_space.stdout }}GB"
+
+  roles:
+    - role: gitlab
+
+  post_tasks:
+    - name: Проверка состояния контейнера Gitlab
+      ansible.builtin.command: docker ps --filter "name={{ gitlab_container_name }}" --format "{{ '{{' }}.Status{{ '}}' }}"
+      register: container_status
+      changed_when: false
+
+    - name: Финальный вывод
+      ansible.builtin.debug:
+        msg:
+          - "========================================"
+          - "GitLab успешно развёрнут!"
+          - "Статус контейнера: {{ container_status.stdout }}"
+          - "GitLab доступен по адресу: {{ gitlab_external_url }}:{{ gitlab_http_port }}"
+          - "SSH: ssh://git@{{ gitlab_domain }}:{{ gitlab_ssh_port }}"
+          - "Начальный пароль root: см. {{ gitlab_config_dir }}/initial_root_password"
+          - "========================================"

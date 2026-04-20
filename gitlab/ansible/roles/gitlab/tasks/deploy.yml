@@ -1,0 +1,60 @@
+---
+- name: Деплой docker-compose.yml
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ gitlab_compose_dir }}/docker-compose.yml"
+    owner: root
+    group: root
+    mode: "0640"
+  register: compose_file
+
+- name: Деплой .env
+  ansible.builtin.template:
+    src: gitlab.env.j2
+    dest: "{{ gitlab_compose_dir }}/.env"
+    owner: root
+    group: root
+    mode: "0600"
+  register: env_file
+
+- name: Скачивание Docker образа Gitlab
+  community.docker.docker_compose_v2:
+    project_src: "{{ gitlab_compose_dir }}"
+    pull: always
+    state: absent
+  when: false 
+
+- name: Явное скачивание Docker образа Gitlab
+  ansible.builtin.command:
+    cmd: docker compose pull
+    chdir: "{{ gitlab_compose_dir }}"
+  register: pull_result
+  changed_when: "'Pulled' in pull_result.stdout or 'Downloaded' in pull_result.stderr"
+
+- name: Запуск GitLab через Docker Compose
+  ansible.builtin.command:
+    cmd: docker compose up -d
+    chdir: "{{ gitlab_compose_dir }}"
+  register: compose_up
+  changed_when: "'Started' in compose_up.stdout or 'Created' in compose_up.stdout or 'Recreated' in compose_up.stdout"
+
+- name: Ожидание GitLab health-check
+  ansible.builtin.command:
+    cmd: docker inspect --format="{{ '{{' }}.State.Health.Status{{ '}}' }}" {{ gitlab_container_name }}
+  register: health_status
+  until: health_status.stdout == "healthy"
+  retries: "{{ gitlab_healthcheck_retries }}"
+  delay: "{{ gitlab_healthcheck_delay }}"
+  changed_when: false
+
+- name: Получить начальный root пароль
+  ansible.builtin.command:
+    cmd: docker exec {{ gitlab_container_name }} cat /etc/gitlab/initial_root_password
+  register: initial_password
+  changed_when: false
+  failed_when: false
+
+- name: Вывод начального root пароля
+  ansible.builtin.debug:
+    msg: "{{ initial_password.stdout_lines }}"
+  when: initial_password.rc == 0

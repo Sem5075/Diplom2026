@@ -1,0 +1,51 @@
+#!/bin/bash
+# GitLab Restore Script
+# Использование: ./gitlab-restore.sh <backup_timestamp>
+# Пример:        ./gitlab-restore.sh 1699001234_2024_11_03_16.5.0
+
+set -euo pipefail
+
+CONTAINER="{{ gitlab_container_name }}"
+COMPOSE_DIR="{{ gitlab_compose_dir }}"
+BACKUP_TIMESTAMP="${1:-}"
+
+if [ -z "${BACKUP_TIMESTAMP}" ]; then
+    echo "Использование: $0 <backup_timestamp>"
+    echo ""
+    echo "Доступные backup-ы:"
+    ls -lh "{{ gitlab_data_dir }}/backups/"*.tar 2>/dev/null || echo "  Backup-ы не найдены"
+    exit 1
+fi
+
+BACKUP_FILE="{{ gitlab_data_dir }}/backups/${BACKUP_TIMESTAMP}_gitlab_backup.tar"
+
+if [ ! -f "${BACKUP_FILE}" ]; then
+    echo "[ERROR] Файл backup не найден: ${BACKUP_FILE}"
+    exit 1
+fi
+
+echo "ВНИМАНИЕ: Восстановление перезапишет все данные GitLab!"
+echo "Backup: ${BACKUP_FILE}"
+read -p "Продолжить? (yes/no): " CONFIRM
+if [ "${CONFIRM}" != "yes" ]; then
+    echo "Отменено."
+    exit 0
+fi
+
+echo "Остановка фоновых процессов GitLab..."
+docker exec "${CONTAINER}" gitlab-ctl stop puma
+docker exec "${CONTAINER}" gitlab-ctl stop sidekiq
+
+echo "Восстановление из backup..."
+docker exec "${CONTAINER}" gitlab-backup restore \
+    BACKUP="${BACKUP_TIMESTAMP}" \
+    force=yes
+
+echo "Запуск сервисов..."
+docker exec "${CONTAINER}" gitlab-ctl start
+
+echo "Проверка конфигурации..."
+docker exec "${CONTAINER}" gitlab-rake gitlab:check SANITIZE=true
+
+echo "Восстановление завершено!"
+echo "Не забудьте восстановить secrets: {{ gitlab_config_dir }}/gitlab-secrets.json"

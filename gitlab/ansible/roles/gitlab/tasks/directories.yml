@@ -1,0 +1,27 @@
+---
+- name: Созднии базовых директорий GitLab
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - "{{ gitlab_base_dir }}"
+    - "{{ gitlab_config_dir }}"
+    - "{{ gitlab_logs_dir }}"
+    - "{{ gitlab_data_dir }}"
+    - "{{ gitlab_data_dir }}/backups"
+
+- name: Проверка наличия gitlab.rb
+  ansible.builtin.stat:
+    path: "{{ gitlab_config_dir }}/gitlab.rb"
+  register: gitlab_rb_stat
+
+- name: Вывод информации о volumes
+  ansible.builtin.debug:
+    msg:
+      - "Volumes будут сохранены в:"
+      - "  Config : {{ gitlab_config_dir }}"
+      - "  Logs   : {{ gitlab_logs_dir }}"
+      - "  Data   : {{ gitlab_data_dir }}"

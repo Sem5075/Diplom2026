@@ -1,0 +1,87 @@
+---
+- name: Проверка наличия Docker
+  ansible.builtin.command: docker --version
+  register: docker_check
+  changed_when: false
+  failed_when: false
+
+- name: Установка Docker (Debian/Ubuntu)
+  when:
+    - docker_check.rc != 0
+    - ansible_os_family == "Debian"
+  block:
+    - name: Удаление старых версий Docker
+      ansible.builtin.apt:
+        name:
+          - docker
+          - docker-engine
+          - docker.io
+          - containerd
+          - runc
+        state: absent
+
+    - name: Добавление GPG ключа Docker 
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/{{ ansible_distribution | lower }}/gpg
+        state: present
+
+    - name: Добавление репозитория Docker
+      ansible.builtin.apt_repository:
+        repo: >-
+          deb [arch={{ ansible_architecture | replace('x86_64', 'amd64') }}]
+          https://download.docker.com/linux/{{ ansible_distribution | lower }}
+          {{ ansible_distribution_release }} stable
+        state: present
+
+    - name: Установка Docker CE
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+        update_cache: true
+
+- name: Установка Docker (RedHat/CentOS)
+  when:
+    - docker_check.rc != 0
+    - ansible_os_family == "RedHat"
+  block:
+    - name: Добавление репозитория Docker
+      ansible.builtin.get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docker-ce.repo
+        mode: "0644"
+
+    - name: Установка Docker CE
+      ansible.builtin.yum:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
+        state: present
+
+- name: Старт и атозагрузка Docker service
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: true
+
+- name: Проверка работы Docker
+  ansible.builtin.command: docker info
+  register: docker_info
+  changed_when: false
+
+- name: Проверка версии Docker Compose
+  ansible.builtin.command: docker compose version
+  register: compose_version
+  changed_when: false
+  failed_when: false
+
+- name: Показать версию Docker Compose
+  ansible.builtin.debug:
+    msg: "Docker Compose: {{ compose_version.stdout }}"
+  when: compose_version.rc == 0

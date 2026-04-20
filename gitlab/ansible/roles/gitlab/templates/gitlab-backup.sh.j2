@@ -1,0 +1,50 @@
+#!/bin/bash
+# GitLab Backup Script
+# Автоматически создаётся Ansible ролью
+
+set -euo pipefail
+
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+CONTAINER="{{ gitlab_container_name }}"
+COMPOSE_DIR="{{ gitlab_compose_dir }}"
+BACKUP_DIR="{{ gitlab_data_dir }}/backups"
+
+echo "[${TIMESTAMP}] Начало резервного копирования GitLab..."
+
+# Проверка что контейнер запущен
+if ! docker inspect "${CONTAINER}" &>/dev/null; then
+    echo "[ERROR] Контейнер ${CONTAINER} не найден!"
+    exit 1
+fi
+
+CONTAINER_STATUS=$(docker inspect --format='{{ "{{" }}.State.Status{{ "}}" }}' "${CONTAINER}")
+if [ "${CONTAINER_STATUS}" != "running" ]; then
+    echo "[ERROR] Контейнер ${CONTAINER} не запущен (статус: ${CONTAINER_STATUS})"
+    exit 1
+fi
+
+# Создание backup через gitlab-backup
+echo "Создание backup репозиториев и БД..."
+docker exec "${CONTAINER}" gitlab-backup create SKIP=artifacts,builds,pages,lfs \
+    BACKUP="gitlab_${TIMESTAMP}"
+
+# Backup конфигурационных файлов (secrets!)
+echo "Резервное копирование конфигурации и секретов..."
+SECRETS_BACKUP="${BACKUP_DIR}/secrets_${TIMESTAMP}.tar.gz"
+tar -czf "${SECRETS_BACKUP}" \
+    -C "{{ gitlab_config_dir }}" \
+    gitlab.rb \
+    gitlab-secrets.json \
+    2>/dev/null || true
+
+echo "Secrets сохранены: ${SECRETS_BACKUP}"
+
+# Удаление старых backup-ов (оставляем только за {{ gitlab_backup_keep_time }} секунд)
+KEEP_DAYS=$(( {{ gitlab_backup_keep_time }} / 86400 ))
+echo "Удаление backup-ов старше ${KEEP_DAYS} дней..."
+find "${BACKUP_DIR}" -name "*.tar" -mtime +"${KEEP_DAYS}" -delete || true
+find "${BACKUP_DIR}" -name "secrets_*.tar.gz" -mtime +"${KEEP_DAYS}" -delete || true
+
+echo "[${TIMESTAMP}] Резервное копирование завершено успешно."
+echo "Backup хранится в: ${BACKUP_DIR}"
+ls -lh "${BACKUP_DIR}/" | tail -10

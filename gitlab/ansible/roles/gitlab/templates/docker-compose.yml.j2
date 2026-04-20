@@ -1,0 +1,84 @@
+---
+services:
+  gitlab:
+    image: gitlab/gitlab-ee:${GITLAB_VERSION}
+    container_name: {{ gitlab_container_name }}
+    restart: {{ gitlab_restart_policy }}
+    hostname: {{ gitlab_domain }}
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url '{{ gitlab_external_url }}'
+        gitlab_rails['gitlab_shell_ssh_port'] = {{ gitlab_ssh_port }}
+
+        # Настройки производительности
+        puma['worker_processes'] = 2
+        puma['min_threads'] = 1
+        puma['max_threads'] = 4
+        sidekiq['max_concurrency'] = 10
+
+
+        # Backup
+        gitlab_rails['backup_keep_time'] = {{ gitlab_backup_keep_time }}
+        gitlab_rails['backup_path'] = '/var/opt/gitlab/backups'
+
+        # Логи
+        logging['svlogd_size'] = 200 * 1024 * 1024
+        logging['svlogd_num'] = 7
+
+
+    ports:
+      - "{{ gitlab_http_port }}:80"
+      - "{{ gitlab_https_port }}:443"
+      - "{{ gitlab_ssh_port }}:22"
+
+    volumes:
+                                          # === Персистентные данные ===
+      - gitlab_config:/etc/gitlab         # Конфиги (gitlab.rb, secrets)
+      - gitlab_logs:/var/log/gitlab       # Логи всех сервисов
+      - gitlab_data:/var/opt/gitlab       # Git репозитории, базы данных, uploads
+
+    shm_size: {{ gitlab_shm_size }}
+
+    healthcheck:
+      test: ["CMD", "/opt/gitlab/bin/gitlab-healthcheck", "--fail", "--max-time", "10"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 5m
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+
+# =============================================
+# Named volumes — данные хранятся на хосте
+# Docker путь: /var/lib/docker/volumes/
+
+volumes:
+  gitlab_config:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: {{ gitlab_config_dir }}
+
+  gitlab_logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: {{ gitlab_logs_dir }}
+
+  gitlab_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: {{ gitlab_data_dir }}
+
+networks:
+  default:
+    name: {{ gitlab_network_name }}
+    driver: bridge

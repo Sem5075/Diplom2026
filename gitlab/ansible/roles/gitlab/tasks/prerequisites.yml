@@ -1,0 +1,53 @@
+---
+- name: обновление apt кэша (Debian/Ubuntu)
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  when: ansible_os_family == "Debian"
+
+- name: Уствновка системных пакетов (Debian/Ubuntu)
+  ansible.builtin.apt:
+    name:
+      - curl
+      - wget
+      - gnupg2
+      - ca-certificates
+      - apt-transport-https
+      - software-properties-common
+      - python3-pip
+      - python3-docker
+      - lsb-release
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Уствновка системных пакетов (RedHat/CentOS)
+  ansible.builtin.yum:
+    name:
+      - curl
+      - wget
+      - gnupg2
+      - ca-certificates
+      - python3-pip
+      - lsb-release
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Установка Python Docker SDK
+  ansible.builtin.pip:
+    name:
+      - docker
+      - docker-compose
+    state: present
+    executable: pip3
+
+- name: Настройка sysctl для производительности GitLab 
+  ansible.posix.sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    sysctl_set: true
+    state: present
+    reload: true
+  loop:
+    - { name: "vm.swappiness", value: "10" }
+    - { name: "net.core.somaxconn", value: "1024" }
+  ignore_errors: true

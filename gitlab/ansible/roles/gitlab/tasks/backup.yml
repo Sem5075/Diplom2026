@@ -1,0 +1,25 @@
+---
+- name: Деплой скрипта резерного копирования
+  ansible.builtin.template:
+    src: gitlab-backup.sh.j2
+    dest: /usr/local/bin/gitlab-backup.sh
+    owner: root
+    group: root
+    mode: "0750"
+
+- name: Настройка cron для резервного копирования
+  ansible.builtin.cron:
+    name: "GitLab backup"
+    minute: "{{ gitlab_backup_cron_minute }}"
+    hour: "{{ gitlab_backup_cron_hour }}"
+    job: "/usr/local/bin/gitlab-backup.sh >> /var/log/gitlab-backup.log 2>&1"
+    user: root
+    state: present
+
+- name: Деплой скрипта восстановления
+  ansible.builtin.template:
+    src: gitlab-restore.sh.j2
+    dest: /usr/local/bin/gitlab-restore.sh
+    owner: root
+    group: root
+    mode: "0750"
