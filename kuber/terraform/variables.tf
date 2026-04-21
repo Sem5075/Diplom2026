@@ -1,3 +1,11 @@
+variable "vm_master_count" {
+  default = 1
+}
+
+variable "vm_worker_count" {
+  default = 2
+}
+
 variable "vm_cores" {
   default = 2
 }
@@ -11,13 +19,13 @@ variable "vm_disk" {
   default = "20G"
 }
 
-variable "vm_count" {
-  default = 3
-}
-
-variable "vm_name_prefix" {
+variable "vm_master_prefix" {
   type = string
-  default = "kuber"
+  default = "kuber-master"
+}
+variable "vm_worker_prefix" {
+  type = string
+  default = "kuber-worker"
 }
 
 variable "vm_description" {
