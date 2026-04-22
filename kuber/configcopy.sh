@@ -5,6 +5,8 @@ MASTER_HOST=$(grep -A1 "${MASTER_NAME}:" $(pwd)/inventory/mycluster/hosts.yaml |
 SSH_USER=$(grep -A2 "${MASTER_NAME}:" $(pwd)/inventory/mycluster/hosts.yaml | grep 'ansible_user' | awk '{print $2}')
 
 # Копирование kubeconfig с мастера
-ssh ${SSH_USER}@${MASTER_HOST} "sudo cat /etc/kubernetes/admin.conf" 1> kubeconfig/admin.conf
-sed -i "s/127.0.0.1/$MASTER_HOST/" kubeconfig/admin.conf
-echo "Done! kubeconfig сохранён"
+rm kubeconfig/admin.conf
+ssh  ${SSH_USER}@${MASTER_HOST} "sudo cat /etc/kubernetes/admin.conf" 1> kubeconfig/admin.conf && \
+sed -i "s/127.0.0.1/$MASTER_HOST/" kubeconfig/admin.conf && \
+echo "Done! kubeconfig сохранён" || \
+{ echo "Произошла ошибка"; exit 1; }

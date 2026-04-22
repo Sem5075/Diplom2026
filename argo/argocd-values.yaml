@@ -1,0 +1,25 @@
+server:
+  service:
+    type: NodePort        # пока нет MetalLB — NodePort
+  extraArgs:
+    - --insecure          # без TLS локально, потом можно включить
+
+configs:
+  params:
+    server.insecure: true
+
+# Отключаем HA — для локального кластера лишнее
+redis-ha:
+  enabled: false
+
+controller:
+  replicas: 1
+
+server:
+  replicas: 1
+
+repoServer:
+  replicas: 1
+
+applicationSet:
+  replicas: 1
