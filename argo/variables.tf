@@ -7,7 +7,7 @@ variable "kube_context" {
 }
 
 variable "argocd_chart_version" {
-  default = "9.5.2"
+  default = "9.5.5"
 }
 
 variable "argocd_admin_password_bcrypt" {

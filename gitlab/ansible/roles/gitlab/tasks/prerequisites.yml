@@ -5,7 +5,7 @@
     cache_valid_time: 3600
   when: ansible_os_family == "Debian"
 
-- name: Уствновка системных пакетов (Debian/Ubuntu)
+- name: Установка системных пакетов (Debian/Ubuntu)
   ansible.builtin.apt:
     name:
       - curl
@@ -20,7 +20,7 @@
     state: present
   when: ansible_os_family == "Debian"
 
-- name: Уствновка системных пакетов (RedHat/CentOS)
+- name: Установка системных пакетов (RedHat/CentOS)
   ansible.builtin.yum:
     name:
       - curl

@@ -1,13 +1,15 @@
 ---
 # === Основные настройки GitLab ===
 gitlab_version: "latest"
-gitlab_domain: "{{ ansible_host }}"
-gitlab_external_url: "http://{{ ansible_host }}"
+gitlab_domain: "{{ hostvars[inventory_hostname]['gitlab_domain'] | default(ansible_host) }}"
+gitlab_external_url: "https://{{ gitlab_domain }}"
+gitlab_registry_domain: "registry.{{ gitlab_domain }}"
 
 # === Порты ===
 gitlab_http_port: 5080
 gitlab_https_port: 5443
 gitlab_ssh_port: 2222
+gitlab_registry_port: 5050
 
 # === Пути на хосте для volumes ===
 gitlab_base_dir: "/opt/gitlab"

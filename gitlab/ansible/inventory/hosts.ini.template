@@ -1,5 +1,5 @@
 [gitlab_servers]
-gitlab ansible_host="Адрес сервера" ansible_user="Имя пользователя"
+gitlab ansible_host="Адрес сервера" ansible_user="Имя пользователя" gitlab_domain="домен для гитлаба"
 
 [gitlab_servers:vars]
 ansible_ssh_private_key_file=~/.ssh/id_rsa

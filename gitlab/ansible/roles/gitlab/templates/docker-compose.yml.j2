@@ -8,14 +8,38 @@ services:
     environment:
       GITLAB_OMNIBUS_CONFIG: |
         external_url '{{ gitlab_external_url }}'
+
+        # За reverse proxy (NPM снимает SSL)
+        nginx['listen_port'] = 80
+        nginx['listen_https'] = false
+        nginx['proxy_set_headers'] = {
+          "X-Forwarded-Proto" => "https",
+          "X-Forwarded-Ssl"   => "on"
+        }
+
+        # SSL на стороне GitLab не нужен — им занимается NPM
+        letsencrypt['enable'] = false
+
+        # SSH
         gitlab_rails['gitlab_shell_ssh_port'] = {{ gitlab_ssh_port }}
 
-        # Настройки производительности
+        # Registry — NPM проксирует registry.gitlab.semops.duckdns.org → :5050
+        registry_external_url 'https://{{ gitlab_registry_domain }}'
+        registry_nginx['enable'] = true
+        registry_nginx['listen_port'] = 5050
+        registry_nginx['listen_https'] = false
+        registry_nginx['ssl_certificate'] = nil
+        registry_nginx['ssl_certificate_key'] = nil
+        registry_nginx['proxy_set_headers'] = {
+          "X-Forwarded-Proto" => "https",
+          "X-Forwarded-Ssl"   => "on"
+        }
+
+        # Производительность
         puma['worker_processes'] = 2
         puma['min_threads'] = 1
         puma['max_threads'] = 4
         sidekiq['max_concurrency'] = 10
-
 
         # Backup
         gitlab_rails['backup_keep_time'] = {{ gitlab_backup_keep_time }}
@@ -30,6 +54,7 @@ services:
       - "{{ gitlab_http_port }}:80"
       - "{{ gitlab_https_port }}:443"
       - "{{ gitlab_ssh_port }}:22"
+      - "{{ gitlab_registry_port }}:5050"
 
     volumes:
                                           # === Персистентные данные ===

@@ -40,4 +40,4 @@ hosts.ini
 *.log
 hosts.yaml
 admin.conf
-vms_ids.env
+vm_ids.env

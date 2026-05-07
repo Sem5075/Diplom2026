@@ -41,7 +41,7 @@
           - "========================================"
           - "GitLab успешно развёрнут!"
           - "Статус контейнера: {{ container_status.stdout }}"
-          - "GitLab доступен по адресу: {{ gitlab_external_url }}:{{ gitlab_http_port }}"
+          - "GitLab доступен по адресу: {{ gitlab_external_url }}"
           - "SSH: ssh://git@{{ gitlab_domain }}:{{ gitlab_ssh_port }}"
           - "Начальный пароль root: см. {{ gitlab_config_dir }}/initial_root_password"
           - "========================================"

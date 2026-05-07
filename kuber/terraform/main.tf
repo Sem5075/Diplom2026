@@ -123,5 +123,5 @@ resource "local_file" "vm_ids" {
     [for vm in proxmox_vm_qemu.master : "${vm.name}=${vm.vmid}"],
     [for vm in proxmox_vm_qemu.worker : "${vm.name}=${vm.vmid}"]
   )) 
-  filename = "${path.module}/../inventory/vm_ids.env"
+  filename = "${path.module}/../inventory/mycluster/vm_ids.env"
 }

@@ -1,0 +1,2 @@
+# Отключить nodelocaldns (он и создаёт 169.254.25.10 который таймаутит)
+enable_nodelocaldns: false
