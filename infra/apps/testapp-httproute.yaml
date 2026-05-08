@@ -3,8 +3,6 @@ kind: HTTPRoute
 metadata:
   name: my-app
   namespace: default
-  annotations:
-    argocd.argoproj.io/compare-options: IgnoreExtraneousFields
 spec:
   parentRefs:
     - name: main-gateway
