@@ -5,6 +5,8 @@ metadata:
   namespace: argocd
 spec:
   parentRefs:
+    - group: gateway.networking.k8s.io	
+      kind: Gateway
     - name: main-gateway
       namespace: envoy-gateway-system
   hostnames:
@@ -15,6 +17,8 @@ spec:
             type: PathPrefix
             value: /
       backendRefs:
+        - group: ''	
+          kind: Service
         - name: argocd-server
           port: 80 
           weight: 1
