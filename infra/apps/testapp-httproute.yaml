@@ -8,7 +8,7 @@ spec:
     - name: main-gateway
       namespace: envoy-gateway-system
   hostnames:
-    - "app.semops.duckdns.org"
+    - app.semops.duckdns.org
   rules:
     - matches:
         - path:
@@ -17,3 +17,4 @@ spec:
       backendRefs:
         - name: testapp
           port: 80
+          weight: 1
