@@ -11,7 +11,7 @@ resource "helm_release" "argocd" {
   atomic           = true 
   create_namespace = false
 
-  set = [                #сраный костыль так как блочат репы aws и ghcr 
+  set = [                #сраный костыль так как блочат репы aws и ghcr, если не блочат то весь set в коммент 
     {
       name  = "redis.image.repository"
       value = "registry.semops.duckdns.org/sem5075/infratestrepo/redis"
@@ -44,4 +44,44 @@ resource "helm_release" "argocd" {
       })
     ]
   )
+}
+
+resource "kubernetes_secret" "argocd_repo_1" {
+  depends_on = [helm_release.argocd]
+
+  metadata {
+    name      = "repo-github"
+    namespace = kubernetes_namespace.argocd.metadata[0].name
+    labels = {
+      "argocd.argoproj.io/secret-type" = "repository"
+    }
+  }
+
+  data = {
+    type     = "git"
+    url      = var.argocd_github_repo_url
+    project  = "default"
+  }
+
+  type = "Opaque"
+}
+
+resource "kubernetes_secret" "argocd_repo_2" {
+  depends_on = [helm_release.argocd]
+
+  metadata {
+    name      = "repo-gitlab"
+    namespace = kubernetes_namespace.argocd.metadata[0].name
+    labels = {
+      "argocd.argoproj.io/secret-type" = "repository"
+    }
+  }
+
+  data = {
+    type     = "git"
+    url      = var.argocd_gitlab_repo_url
+    project  = "default"
+  }
+
+  type = "Opaque"
 }

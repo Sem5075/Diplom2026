@@ -1,2 +1,5 @@
 # Отключить nodelocaldns (он и создаёт 169.254.25.10 который таймаутит)
 enable_nodelocaldns: false
+upstream_dns_servers:
+  - 1.1.1.1
+  - 8.8.8.8

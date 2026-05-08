@@ -14,3 +14,11 @@ variable "argocd_admin_password_bcrypt" {
   default = ""  # пустой = случайный пароль, смотреть в secret
   sensitive   = true
 }
+
+variable "argocd_github_repo_url" {
+  default = "https://github.com/Sem5075/Diplom2026.git"
+}
+
+variable "argocd_gitlab_repo_url" {
+  default = "https://gitlab.semops.duckdns.org/Sem5075/infratestrepo.git"
+}
