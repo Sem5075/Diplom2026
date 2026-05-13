@@ -5,7 +5,7 @@ variable "gitlab_token" {
 
 variable "gitlab_url" {
   type    = string
-  default = "https://gitlab.semops.duckdns.org"
+  default = "https://gitlab.semops.ru"
 }
 
 variable "gitlab_runner_tags" {

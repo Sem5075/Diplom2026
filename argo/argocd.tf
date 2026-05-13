@@ -14,7 +14,7 @@ resource "helm_release" "argocd" {
   set = [                #сраный костыль так как блочат репы aws и ghcr, если не блочат то весь set в коммент 
     {
       name  = "redis.image.repository"
-      value = "registry.semops.duckdns.org/sem5075/infratestrepo/redis"
+      value = "library/redis"
     },
     {
     name  = "redis.image.tag"
@@ -22,7 +22,7 @@ resource "helm_release" "argocd" {
     },
     {
       name  = "dex.image.repository"
-      value = "registry.semops.duckdns.org/sem5075/infratestrepo/dex"
+      value = "dexidp/dex"
     },
     {
     name  = "dex.image.tag"

@@ -20,5 +20,5 @@ variable "argocd_github_repo_url" {
 }
 
 variable "argocd_gitlab_repo_url" {
-  default = "https://gitlab.semops.duckdns.org/Sem5075/infratestrepo.git"
+  default = "https://gitlab.semops.ru/Sem5075/infratestrepo.git"
 }
