@@ -10,7 +10,7 @@ spec:
       name: main-gateway
       namespace: envoy-gateway-system
   hostnames:
-    - app.semops.duckdns.org
+    - app.semops.ru
   rules:
     - matches:
         - path:

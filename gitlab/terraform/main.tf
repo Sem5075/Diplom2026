@@ -61,21 +61,23 @@ resource "proxmox_vm_qemu" "runner" {
 
   provisioner "remote-exec" {
     inline = [
-      # Ждём cloud-init
+      # cloud-init
       "sudo cloud-init status --wait",
-
-      # Устанавливаем GitLab Runner
-      "sudo curl -L --output /usr/local/bin/gitlab-runner https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64",
-      "sudo chmod +x /usr/local/bin/gitlab-runner",
-      "sudo useradd --comment 'GitLab Runner' --create-home gitlab-runner --shell /bin/bash",
+      # Docker
+      "curl -fsSL https://get.docker.com | sh",
+      # Runner user
+      "sudo useradd -m -s /bin/bash gitlab-runner || true",
+      # GitLab Runner
+      "curl -L --output gitlab-runner https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64",
+      "sudo install gitlab-runner /usr/local/bin/gitlab-runner",
+      # Service
       "sudo gitlab-runner install --user=gitlab-runner --working-directory=/home/gitlab-runner",
-      "sudo gitlab-runner start",
-
-      # Регистрируем Runner
-      "sudo gitlab-runner register --non-interactive --url '${var.gitlab_url}' --token '${var.gitlab_token}' --name '${var.vm_runner_prefix}' --executor 'shell' ",
-
-      # Запускаем сервис
-      "sudo systemctl enable --now gitlab-runner"
+      "sudo systemctl enable gitlab-runner",
+      "sudo systemctl start gitlab-runner",
+      # Docker access
+      "sudo usermod -aG docker gitlab-runner",
+      # Register
+      "sudo gitlab-runner register --non-interactive --url '${var.gitlab_url}' --token '${var.gitlab_token}' --name '${var.vm_runner_prefix}' --executor docker --docker-image alpine:latest --docker-privileged"
     ]
   }
 }

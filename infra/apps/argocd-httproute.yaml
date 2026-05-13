@@ -10,7 +10,7 @@ spec:
       name: main-gateway
       namespace: envoy-gateway-system
   hostnames:
-    - argocd.semops.duckdns.org
+    - argocd.semops.ru
   rules:
     - matches:
         - path:
