@@ -3,6 +3,8 @@ kind: Gateway
 metadata:
   name: main-gateway
   namespace: envoy-gateway-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
 spec:
   gatewayClassName: envoy
   listeners:

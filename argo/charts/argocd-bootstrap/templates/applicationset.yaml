@@ -1,0 +1,66 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+
+metadata:
+  name: infra-apps
+  namespace: argocd
+
+spec:
+  generators:
+    - list:
+        elements:
+
+          - name: metallb
+            namespace: metallb
+            path: infra/metallb
+            wave: "-10"
+
+          - name: envoy-gateway
+            namespace: envoy-gateway-system
+            path: infra/envoy-gateway
+            wave: "0"
+
+  template:
+    metadata:
+      name: '{{`{{name}}`}}'
+
+      annotations:
+        argocd.argoproj.io/sync-wave: '{{`{{wave}}`}}'
+
+      finalizers:
+      - resources-finalizer.argocd.argoproj.io/background
+      
+    spec:
+      project: default
+
+      source:
+        repoURL: {{ .Values.repoUrl }}
+        targetRevision: {{ .Values.targetRevision }}
+        path: '{{`{{path}}`}}'
+
+        helm:
+          valueFiles:
+            - values.yaml
+
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{`{{namespace}}`}}'
+
+      syncPolicy:
+
+        automated:
+          prune: true
+          selfHeal: true
+
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+          - PruneLast=true
+
+        retry:
+          limit: 5
+
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m

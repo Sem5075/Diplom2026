@@ -4,8 +4,8 @@ resource "kubernetes_namespace" "argocd" {
 
 resource "helm_release" "argocd" {
   name             = "argocd"
-  namespace        = kubernetes_namespace.argocd.metadata[0].name
-  chart            = "${path.module}/argo-cd-9.5.5.tgz" 
+  namespace        = kubernetes_namespace.argocd.metadata[0].name 
+  chart            = "${path.module}/argo-cd-9.5.5.tgz" #Либо repository = "https://argoproj.github.io/argo-helm" и chart = "argo-cd"
   version          = var.argocd_chart_version
   timeout          = 600
   atomic           = true 
@@ -84,4 +84,27 @@ resource "kubernetes_secret" "argocd_repo_2" {
   }
 
   type = "Opaque"
+}
+
+resource "helm_release" "argocd_bootstrap" {
+
+  depends_on = [
+    helm_release.argocd
+  ]
+
+  name      = "argocd-bootstrap"
+  namespace = kubernetes_namespace.argocd.metadata[0].name
+
+  chart = "${path.module}/charts/argocd-bootstrap"
+
+  atomic           = true
+  create_namespace = false
+
+  values = [
+    yamlencode({
+      repoUrl        = var.argocd_github_repo_url
+      targetRevision = "HEAD"
+      infraPath      = "infra"
+    })
+  ]
 }

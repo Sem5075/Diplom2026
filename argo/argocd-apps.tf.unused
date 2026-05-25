@@ -72,32 +72,3 @@ resource "kubernetes_manifest" "envoy_gateway_app" {
     }
   }
 }
-
-resource "kubernetes_manifest" "apps_app" {
-  depends_on = [kubernetes_manifest.envoy_gateway_app]
-
-  manifest = {
-    apiVersion = "argoproj.io/v1alpha1"
-    kind       = "Application"
-    metadata = {
-      name      = "apps"
-      namespace = "argocd"
-    }
-    spec = {
-      project = "default"
-      source = {
-        repoURL        = var.argocd_github_repo_url
-        targetRevision = "HEAD"
-        path           = "infra/apps"
-      }
-      destination = {
-        server    = "https://kubernetes.default.svc"
-        namespace = "default"
-      }
-      syncPolicy = {
-        automated = { prune = true, selfHeal = true }
-        syncOptions = ["CreateNamespace=true", "ServerSideApply=true"]
-      }
-    }
-  }
-}
