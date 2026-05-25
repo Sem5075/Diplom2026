@@ -1,0 +1,7 @@
+image:
+  repository: registry.semops.ru/sem5075/infratestrepo/testapp
+  tag: latest
+
+replicaCount: 3
+
+host: app.semops.ru

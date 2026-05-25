@@ -20,6 +20,12 @@ spec:
             path: infra/envoy-gateway
             wave: "0"
 
+          - name: testapp
+            namespace: testapp
+            path: infra/testapp
+            wave: "10"
+
+
   template:
     metadata:
       name: '{{`{{name}}`}}'
