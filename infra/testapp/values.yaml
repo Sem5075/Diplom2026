@@ -1,6 +1,6 @@
 image:
   repository: registry.semops.ru/sem5075/infratestrepo/testapp
-  tag: latest
+  tag: v1
 
 replicaCount: 3
 
