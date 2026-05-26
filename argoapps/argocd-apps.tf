@@ -120,14 +120,14 @@ resource "kubernetes_manifest" "testapp" {
       source = {
         repoURL        = var.argocd_gitlab_repo_url
         targetRevision = "HEAD"
-        path           = "infra/testapp"
+        path           = "templates/"
         helm = {
           valueFiles = ["values.yaml"]
         }
       }
       destination = {
         server    = "https://kubernetes.default.svc"
-        namespace = "envoy-gateway-system"
+        namespace = "testapp"
       }
       syncPolicy = {
         automated = { prune = true, selfHeal = true }
