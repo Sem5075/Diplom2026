@@ -14,7 +14,7 @@ terraform {
 
 provider "kubernetes" {
   config_path    = var.kubeconfig_path
-  config_context = var.kube_context  # например "admin@proxmox-cluster"
+  config_context = var.kube_context 
 }
 
 provider "helm" {

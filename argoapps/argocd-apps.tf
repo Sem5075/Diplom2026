@@ -1,3 +1,41 @@
+resource "kubernetes_secret" "argocd_repo_1" {
+
+  metadata {
+    name      = "repo-github"
+    namespace = "argocd"
+    labels = {
+      "argocd.argoproj.io/secret-type" = "repository"
+    }
+  }
+
+  data = {
+    type     = "git"
+    url      = var.argocd_github_repo_url
+    project  = "default"
+  }
+
+  type = "Opaque"
+}
+
+resource "kubernetes_secret" "argocd_repo_2" {
+
+  metadata {
+    name      = "repo-gitlab"
+    namespace = "argocd"
+    labels = {
+      "argocd.argoproj.io/secret-type" = "repository"
+    }
+  }
+
+  data = {
+    type     = "git"
+    url      = var.argocd_gitlab_repo_url
+    project  = "default"
+  }
+
+  type = "Opaque"
+}
+
 resource "kubernetes_manifest" "metallb_app" {
   manifest = {
     apiVersion = "argoproj.io/v1alpha1"
@@ -80,7 +118,7 @@ resource "kubernetes_manifest" "testapp" {
     spec = {
       project = "default"
       source = {
-        repoURL        = var.argocd_github_repo_url
+        repoURL        = var.argocd_gitlab_repo_url
         targetRevision = "HEAD"
         path           = "infra/testapp"
         helm = {

@@ -1,7 +1,0 @@
-image:
-  repository: registry.semops.ru/sem5075/testapp
-  tag: latest
-
-replicaCount: 3
-
-host: app.semops.ru
