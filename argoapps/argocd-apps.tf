@@ -1,10 +1,4 @@
 resource "kubernetes_manifest" "metallb_app" {
-  depends_on = [
-    helm_release.argocd,
-    kubernetes_secret.argocd_repo_1,
-    kubernetes_secret.argocd_repo_2
-  ]
-
   manifest = {
     apiVersion = "argoproj.io/v1alpha1"
     kind       = "Application"
@@ -53,6 +47,42 @@ resource "kubernetes_manifest" "envoy_gateway_app" {
         repoURL        = var.argocd_github_repo_url
         targetRevision = "HEAD"
         path           = "infra/envoy-gateway"
+        helm = {
+          valueFiles = ["values.yaml"]
+        }
+      }
+      destination = {
+        server    = "https://kubernetes.default.svc"
+        namespace = "envoy-gateway-system"
+      }
+      syncPolicy = {
+        automated = { prune = true, selfHeal = true }
+        syncOptions = ["CreateNamespace=true", "ServerSideApply=true"]
+        retry = {
+          limit = 5
+          backoff = { duration = "5s", factor = 2, maxDuration = "3m" }
+        }
+      }
+    }
+  }
+}
+
+resource "kubernetes_manifest" "testapp" {
+  depends_on = [kubernetes_manifest.metallb_app]
+
+  manifest = {
+    apiVersion = "argoproj.io/v1alpha1"
+    kind       = "Application"
+    metadata = {
+      name      = "testapp"
+      namespace = "argocd"
+    }
+    spec = {
+      project = "default"
+      source = {
+        repoURL        = var.argocd_github_repo_url
+        targetRevision = "HEAD"
+        path           = "infra/testapp"
         helm = {
           valueFiles = ["values.yaml"]
         }

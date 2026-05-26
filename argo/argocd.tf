@@ -85,26 +85,3 @@ resource "kubernetes_secret" "argocd_repo_2" {
 
   type = "Opaque"
 }
-
-resource "helm_release" "argocd_bootstrap" {
-
-  depends_on = [
-    helm_release.argocd
-  ]
-
-  name      = "argocd-bootstrap"
-  namespace = kubernetes_namespace.argocd.metadata[0].name
-
-  chart = "${path.module}/charts/argocd-bootstrap"
-
-  atomic           = true
-  create_namespace = false
-
-  values = [
-    yamlencode({
-      repoUrl        = var.argocd_github_repo_url
-      targetRevision = "HEAD"
-      infraPath      = "infra"
-    })
-  ]
-}
