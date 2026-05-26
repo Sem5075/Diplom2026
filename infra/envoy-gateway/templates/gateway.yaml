@@ -3,6 +3,8 @@ kind: Gateway
 metadata:
   name: main-gateway
   namespace: envoy-gateway-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
 spec:
   gatewayClassName: envoy
   listeners:
@@ -11,4 +13,4 @@ spec:
       port: 80
       allowedRoutes:
         namespaces:
-          from: All  # роуты из любого namespace
+          from: All
