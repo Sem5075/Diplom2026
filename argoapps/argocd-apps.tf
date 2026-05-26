@@ -120,7 +120,7 @@ resource "kubernetes_manifest" "testapp" {
       source = {
         repoURL        = var.argocd_gitlab_repo_url
         targetRevision = "HEAD"
-        path           = "templates/"
+        path           = "."
         helm = {
           valueFiles = ["values.yaml"]
         }
