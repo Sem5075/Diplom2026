@@ -23,7 +23,7 @@ variable "vm_memory" {
 
 variable "vm_disk" {
   type = string
-  default = "10G"
+  default = "20G"
 }
 
 variable "vm_runner_prefix" {

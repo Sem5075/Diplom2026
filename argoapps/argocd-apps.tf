@@ -1,7 +1,7 @@
-resource "kubernetes_secret" "argocd_repo_1" {
+resource "kubernetes_secret" "argocd_repo" {
 
   metadata {
-    name      = "repo-github"
+    name      = "repo-gitops"
     namespace = "argocd"
     labels = {
       "argocd.argoproj.io/secret-type" = "repository"
@@ -10,26 +10,7 @@ resource "kubernetes_secret" "argocd_repo_1" {
 
   data = {
     type     = "git"
-    url      = var.argocd_github_repo_url
-    project  = "default"
-  }
-
-  type = "Opaque"
-}
-
-resource "kubernetes_secret" "argocd_repo_2" {
-
-  metadata {
-    name      = "repo-gitlab"
-    namespace = "argocd"
-    labels = {
-      "argocd.argoproj.io/secret-type" = "repository"
-    }
-  }
-
-  data = {
-    type     = "git"
-    url      = var.argocd_gitlab_repo_url
+    url      = var.argocd_gitops_repo_url
     project  = "default"
   }
 
@@ -48,7 +29,7 @@ resource "kubernetes_manifest" "metallb_app" {
     spec = {
       project = "default"
       source = {
-        repoURL        = var.argocd_github_repo_url
+        repoURL        = var.argocd_gitops_repo_url
         targetRevision = "HEAD"
         path           = "infra/metallb"           
         helm = { valueFiles = ["values.yaml"] }
@@ -82,7 +63,7 @@ resource "kubernetes_manifest" "envoy_gateway_app" {
     spec = {
       project = "default"
       source = {
-        repoURL        = var.argocd_github_repo_url
+        repoURL        = var.argocd_gitops_repo_url
         targetRevision = "HEAD"
         path           = "infra/envoy-gateway"
         helm = {
@@ -118,9 +99,9 @@ resource "kubernetes_manifest" "testapp" {
     spec = {
       project = "default"
       source = {
-        repoURL        = var.argocd_gitlab_repo_url
+        repoURL        = var.argocd_gitops_repo_url
         targetRevision = "HEAD"
-        path           = "."
+        path           = "infra/testapp"
         helm = {
           valueFiles = ["values.yaml"]
         }
